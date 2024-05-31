@@ -17,10 +17,10 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     e.preventDefault()
-    const allowedTypes = ['png', 'jpeg', 'jpg', 'gif'];
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
     try {
-      if (!allowedTypes.includes(file.type.split("/")[1])) {
+      if (!allowedTypes.includes(file.type)) {
         this.document.querySelector(`input[data-testid="file"]`).value = "";
         throw new Error('Format de fichier non autorisé');
       }
