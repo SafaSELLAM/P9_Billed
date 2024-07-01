@@ -5,7 +5,7 @@
 import LoginUI from "../views/LoginUI";
 import Login from "../containers/Login.js";
 import { ROUTES } from "../constants/routes";
-import { fireEvent, screen } from "@testing-library/dom";
+import { fireEvent, screen, waitFor } from "@testing-library/dom";
 
 describe("Given that I am a user on login page", () => {
   describe("When I do not fill fields and I click on employee button Login In", () => {
@@ -227,4 +227,62 @@ describe("Given that I am a user on login page", () => {
       expect(screen.queryByText("Validations")).toBeTruthy();
     });
   });
+  describe("When I call the login method", () => {
+    //add DOM elements
+    beforeEach(() => {
+      document.body.innerHTML = LoginUI();
+    });
+
+    test("Then it should store jwt in localStorage on successful login", async () => {
+
+      const mockUser = { email: "testuser@example.com", password: "password" };
+
+      Object.defineProperty(window, "localStorage", {
+        value: {
+          getItem: jest.fn(() => null),
+          setItem: jest.fn(() => null),
+        },
+        writable: true,
+      });
+
+      const mockStore = {
+        login: jest.fn().mockResolvedValue({ jwt: "fake-jwt-token" }),
+      };
+
+      const login = new Login({
+        document: document,
+        localStorage: window.localStorage,
+        onNavigate: jest.fn(),
+        PREVIOUS_LOCATION: "",
+        store: mockStore,
+      });
+
+      await login.login(mockUser);
+
+      // Check that store.login was called with the correct parameters
+      expect(mockStore.login).toHaveBeenCalledWith(JSON.stringify({
+        email: mockUser.email,
+        password: mockUser.password,
+      }));
+
+      // Check that localStorage.setItem was called with the correct parameters
+      expect(window.localStorage.setItem).toHaveBeenCalledWith("jwt", "fake-jwt-token");
+    });
+
+    test("Then it should return null if no store is provided", async () => {
+      const mockUser = { email: "testuser@example.com", password: "password" };
+
+      const login = new Login({
+        document: document,
+        localStorage: window.localStorage,
+        onNavigate: jest.fn(),
+        PREVIOUS_LOCATION: "",
+        store: null,
+      });
+      const result = await login.login(mockUser);
+      // Check that the result is null
+      expect(result).toBeNull();
+    });
+  });
 });
+

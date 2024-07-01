@@ -1,5 +1,6 @@
 import { ROUTES_PATH } from '../constants/routes.js'
 import Logout from "./Logout.js"
+import { allowedTypes } from '../constants/allowedTypes.js'
 
 export default class NewBill {
   constructor({ document, onNavigate, store, localStorage }) {
@@ -17,10 +18,12 @@ export default class NewBill {
   }
   handleChangeFile = e => {
     e.preventDefault()
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+
     const file = this.document.querySelector(`input[data-testid="file"]`).files[0]
+    this.correctFormat = true;
     try {
       if (!allowedTypes.includes(file.type)) {
+        this.correctFormat = false;
         this.document.querySelector(`input[data-testid="file"]`).value = "";
         throw new Error('Format de fichier non autorisé');
       }
@@ -46,7 +49,6 @@ export default class NewBill {
         }
       })
       .then(({ fileUrl, key }) => {
-        console.log(fileUrl)
         this.billId = key
         this.fileUrl = fileUrl
         this.fileName = fileName
@@ -54,7 +56,6 @@ export default class NewBill {
   }
   handleSubmit = e => {
     e.preventDefault()
-    console.log('e.target.querySelector(`input[data-testid="datepicker"]`).value', e.target.querySelector(`input[data-testid="datepicker"]`).value)
     const email = JSON.parse(localStorage.getItem("user")).email
     const bill = {
       email,
